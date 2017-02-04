@@ -1,1 +1,1 @@
-./deeplearning/ec2/install.sh
+~/src/anaconda3/bin/jupyter notebook
