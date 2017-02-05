@@ -1,5 +1,5 @@
 #!/bin/bash
-sudo yum update
+#sudo yum update
 
 my_dir="$(dirname "$0")"
 
