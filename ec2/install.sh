@@ -6,7 +6,7 @@ source ~/.bash_profile
 
 conda install -y pytorch torchvision -c soumith
 
-./jupyter.sh 
+./installjupyter.sh 
 
 
 #Add Custom TCP Rule Add port 8888 to secrity rule
