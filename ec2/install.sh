@@ -3,11 +3,10 @@ sudo yum update
 
 my_dir="$(dirname "$0")"
 
-echo "export PATH=\$HOME/src/anaconda3/bin:\$PATH" >> ~/.bash_profile
+echo "export PATH=\$HOME/src/anaconda2/bin:\$PATH" >> ~/.bash_profile
 source ~/.bash_profile
 
 conda install -y pytorch torchvision -c soumith
-
 
 "$my_dir/installjupyter.sh"
 

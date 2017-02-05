@@ -3,7 +3,7 @@
 ## Installation
 Instructions to setup a deep learning enviornment with pytorch. 
 
-1. Deep Learning AMI  - https://aws.amazon.com/marketplace/pp/B01M0AXXQB. 
+1. Deep Learning AMI  - https://aws.amazon.com/marketplace/pp/B01M0AXXQB 
 2. Setup a KeyPair if not already. Can name is anything. This will be used in the ssh command. Create an instance
 3. To test start with micro instance. The g2 and p2 have GPU's, and should choose if want to run with GPU (note the hourly rates)
 4. Go to Security Groups Section on the EC2 console and Add Custom TCP Rule add port 8888
@@ -27,7 +27,7 @@ Instructions to setup a deep learning enviornment with pytorch.
     ```
     nohup ./deeplearning/ec2/jupyterserver.sh & 
     ```
-8. In chrome https://ec2-user@ec2-52-90-230-235.compute-1.amazonaws.com:8888, ignore the secruity warning (since it is a self signed ssl cert). Type in deeplearning as password. If you want to change password, get a new hash and update $HOME/.jupyter/jupyter_notebook_config.py c.NotebookApp.password property using the output from below
+8. In chrome https://ec2-user@ec2-52-90-230-235.compute-1.amazonaws.com:8888, ignore the secruity warning (since it is a self signed ssl cert). Type in deeplearning as password. If you want to change password, get a new hash and update $HOME/.jupyter/jupyter_notebook_config.py c.NotebookApp.password property using the output from below.
 
 	```
 	from notebook.auth import passwd

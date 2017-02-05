@@ -1,3 +1,3 @@
 #!/bin/bash
 
-~/src/anaconda3/bin/jupyter notebook
+~/src/anaconda2/bin/jupyter notebook
