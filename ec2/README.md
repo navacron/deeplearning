@@ -27,4 +27,10 @@ Instructions to setup a deep learning enviornment with pytorch.
     ```
     nohup ./deeplearning/ec2/jupyterserver.sh & 
     ```
+8. In chrome https://ec2-user@ec2-52-90-230-235.compute-1.amazonaws.com:8888, ignore the secruity warning (since it is a self signed ssl cert). Type in deeplearning as password. If you want to change password, get a new hash and update $HOME/.jupyter/jupyter_notebook_config.py c.NotebookApp.password property using the output from below
+
+	```
+	from notebook.auth import passwd
+	passwd()
+	```
 
