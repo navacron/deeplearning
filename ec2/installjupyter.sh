@@ -15,7 +15,7 @@ fi
 if [ ! -f "$JUPYTER_CONFIG_DIR/jupyter_notebook_config.py" ]; then
     # generate default config file
     #jupyter notebook --generate-config
-    mkdir $JUPYTER_CONFIG_DIR
+    mkdir -p $JUPYTER_CONFIG_DIR
 
     # append notebook server settings
     cat <<EOF >> "$JUPYTER_CONFIG_DIR/jupyter_notebook_config.py"

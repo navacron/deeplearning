@@ -1,5 +1,5 @@
+!#/bin/bash
 sudo yum update
-
 
 echo "export PATH=\$HOME/src/anaconda3/bin:\$PATH" >> ~/.bash_profile
 source ~/.bash_profile
