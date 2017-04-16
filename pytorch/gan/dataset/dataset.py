@@ -63,7 +63,7 @@ class Dataset(object):
             fps = [f for f in os.listdir(fp_dir) if os.path.isfile(os.path.join(fp_dir, f))]
             fps = [os.path.join(fp_dir, f) for f in fps]
             fps_img = [fp for fp in fps if re.match(r".*\.jpg$", fp)]
-#            fps_img = [fp for fp in fps if os.path.isfile("%s.cat" % (fp,))]
+            fps_img = [fp for fp in fps if os.path.isfile("%s.cat" % (fp,))]
             result_img.extend(fps_img)
 
         return result_img

@@ -36,13 +36,11 @@ def main():
                                                       "should contain CAT_* folders")
     args = parser.parse_args()
 
-    #subdir_names = ["CAT_00", "CAT_01", "CAT_02", "CAT_03", "CAT_04", "CAT_05", "CAT_06"]
-    subdir_names = ["CAT_00" ]
+    subdir_names = ["CAT_00", "CAT_01", "CAT_02", "CAT_03", "CAT_04", "CAT_05", "CAT_06"]
     subdirs = [os.path.join(args.path, subdir) for subdir in subdir_names]
 
     dataset = Dataset(subdirs)
 
-    print (subdirs)
     for img_idx, image in enumerate(dataset.get_images()):
         print("Image %d" % (img_idx,))
 
