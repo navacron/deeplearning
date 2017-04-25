@@ -102,9 +102,11 @@ nc = int(opt.nc)
 ncc = nc  
 nzc = nz
 
+num_classes = 4
+
 if opt.cond:
-    ncc = nc + 1
-    nzc = nz + 1
+    ncc = nc + num_classes
+    nzc = nz + num_classes
 
 # custom weights initialization called on netG and netD
 def weights_init(m):
@@ -209,15 +211,31 @@ fake_label = 0
 
 import sys
 
-if opt.cond:
-    # when doing conditioning, fix to 1 class
-    ones = torch.ones(opt.batchSize,1,1,1)
-    ones = torch.add(ones,2)
-    #ones = torch.mul(ones,10)
-    #ones_norm1 = torch.add(ones,-5)
-    #ones_norm2 = torch.div(ones,10)
-    fixed_noise = torch.cat([fixed_noise,ones],1)
 
+fixed_class = 3
+
+def one_hot(target):
+    # One hot encoding buffer that you create out of the loop and just keep reusing
+    target_onehot = torch.FloatTensor(target.size(0), num_classes)
+    
+    #target_onehot = torch.FloatTensor(opt.batchSize, num_classes)
+    # In your for loop
+    target_onehot.zero_()
+    target_onehot.scatter_(1, target, 1)
+    return target_onehot    
+
+
+
+
+if opt.cond:
+    ones = torch.ones(opt.batchSize,1)
+    fixed_class_vec = torch.mul(ones,fixed_class)
+    #print (fixed_class_vec)
+    class_onehot = one_hot(fixed_class_vec.long())
+    class_onehot.unsqueeze_(2).unsqueeze_(3)
+
+    fixed_noise = torch.cat([fixed_noise,class_onehot],1)
+    #print (fixed_noise)
 
 if opt.cuda:
     netD.cuda()
@@ -231,12 +249,22 @@ label = Variable(label)
 noise = Variable(noise)
 fixed_noise = Variable(fixed_noise)
 
-# print (fixed_noise)
-# sys.exit()
 
 # setup optimizer
 optimizerD = optim.Adam(netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
+
+def one_hot_image_exrta_layers(target):
+    batch_size = target.size(0)
+    target_hot = one_hot(target.unsqueeze(1))
+    #print (target)
+    #print (target_hot)
+    repeat1 = target_hot.repeat(1,64)
+    repeat2 = repeat1.view(batch_size,64,4)
+    repeat3 =repeat2.repeat(1,64,1)
+    repeat4 = repeat3.view(batch_size,64,64,4)
+    repeat5 = repeat4.permute(0,3,2,1)
+    return repeat5    
 
 for epoch in range(opt.niter):
     for i, data in enumerate(dataloader, 0):
@@ -248,26 +276,16 @@ for epoch in range(opt.niter):
         real_cpu, target = data
         batch_size = real_cpu.size(0)
 
-        target5 = None
+        one_hot_target_layers = None
         bs = target.size(0)
 
-        real_cpu_cond = real_cpu
+        real_cpu_with_targets = real_cpu
         if opt.cond:
-            #target_norm1 = torch.add(target,-5)
-            #target_norm2 = torch.div(target_norm1,10)
-            #target_mul = torch.mul(target,10)
-            try:
-                target2 = target.expand(bs,64,64)
-            except:
-                print ("error happened")
-                continue
-            target3 = target2.permute(2,0,1)
-            target4 = target3.unsqueeze(1)
-            target5 = target4.float()
-            real_cpu_cond = torch.cat([real_cpu,target5],1)
+            one_hot_target_layers = one_hot_image_exrta_layers(target)
+            real_cpu_with_targets = torch.cat([real_cpu,one_hot_target_layers],1)
+            
 
-
-        input.data.resize_(real_cpu_cond.size()).copy_(real_cpu_cond)
+        input.data.resize_(real_cpu_with_targets.size()).copy_(real_cpu_with_targets)
         label.data.resize_(batch_size).fill_(real_label)
 
         output = netD(input)
@@ -280,25 +298,24 @@ for epoch in range(opt.niter):
         noise.data.normal_(0, 1)
 
         if opt.cond:
-            #target_norm1 = torch.add(target,-5)
-            #target_norm2 = torch.div(target_norm1,10)
-            #target_mul = torch.mul(target,10)
-            target7 = target.unsqueeze(1).unsqueeze(1).unsqueeze(1)
-            target8 = target7.float()
-            rand1 = noise.data
-            concatnand = torch.cat([rand1,target8],1)
+            noise_data = noise.data
+            target_onehot = one_hot(target.unsqueeze(1))
+            target_onehot.unsqueeze_(2).unsqueeze_(3)
+            noise_data_with_target = torch.cat([noise_data,target_onehot],1)
             noise.data.resize_(batch_size, nzc, 1, 1)
-            noise.data.copy_(concatnand)
+            noise.data.copy_(noise_data_with_target)
+            #print (noise_data_with_target)
+            #sys.exit()
 
         fake = netG(noise)
 
         if opt.cond:
+            #add condition to fake output
             zeros = torch.zeros(bs,opt.nc,64,64)
-            #print (fake)
-            target9 = torch.cat([zeros,target5],1)
+            zeros_with_target = torch.cat([zeros,one_hot_target_layers],1)
             #print (target9)
-            target9 = Variable(target9)
-            fake = fake.add(target9)
+            zeros_with_target_var = Variable(zeros_with_target)
+            fake = fake.add(zeros_with_target_var)
             #print (fake)
             #sys.exit()
             # fake_data = torch.cat([fake.data,target5],1)
@@ -335,10 +352,10 @@ for epoch in range(opt.niter):
             fake2 = fake.data
             if opt.cond:
                 #print (fake)
-                fake2 = fake.data[:,:-1,:,:]
+                fake2 = fake.data[:,0:3,:,:]
                 if opt.nc == 1:
                     fake2 = fake2.unsqueeze(1)
-                print (fake2)
+                #print (fake2)
             vutils.save_image(fake2,
                     '%s/fake_samples_epoch_%03d.png' % (opt.outf, epoch),
                     normalize=True)
