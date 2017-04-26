@@ -223,10 +223,17 @@ def one_hot(target):
     # In your for loop
     target_onehot.zero_()
     target_onehot.scatter_(1, target, 1)
+    if opt.cuda:
+        target_onehot = target_onehot.cuda()
     return target_onehot    
 
 
-
+if opt.cuda:
+    netD.cuda()
+    netG.cuda()
+    criterion.cuda()
+    input, label = input.cuda(), label.cuda()
+    noise, fixed_noise = noise.cuda(), fixed_noise.cuda()
 
 if opt.cond:
     ones = torch.ones(opt.batchSize,1)
@@ -238,12 +245,7 @@ if opt.cond:
     fixed_noise = torch.cat([fixed_noise,class_onehot],1)
     #print (fixed_noise)
 
-if opt.cuda:
-    netD.cuda()
-    netG.cuda()
-    criterion.cuda()
-    input, label = input.cuda(), label.cuda()
-    noise, fixed_noise = noise.cuda(), fixed_noise.cuda()
+
 
 input = Variable(input)
 label = Variable(label)
@@ -265,6 +267,8 @@ def one_hot_image_exrta_layers(target):
     repeat3 =repeat2.repeat(1,64,1)
     repeat4 = repeat3.view(batch_size,64,64,num_classes)
     repeat5 = repeat4.permute(0,3,2,1)
+    if opt.cuda:
+        repeat5 = repeat5.cuda()
     return repeat5    
 
 for epoch in range(opt.niter):
@@ -275,6 +279,8 @@ for epoch in range(opt.niter):
         # train with real
         netD.zero_grad()
         real_cpu, target = data
+        if opt.cuda:
+            real_cpu = real_cpu.cuda()
         batch_size = real_cpu.size(0)
 
         one_hot_target_layers = None
@@ -302,6 +308,8 @@ for epoch in range(opt.niter):
             noise_data = noise.data
             target_onehot = one_hot(target.unsqueeze(1))
             target_onehot.unsqueeze_(2).unsqueeze_(3)
+            #print (target_onehot)
+            #print (noise_data)
             noise_data_with_target = torch.cat([noise_data,target_onehot],1)
             noise.data.resize_(batch_size, nzc, 1, 1)
             noise.data.copy_(noise_data_with_target)
@@ -313,6 +321,8 @@ for epoch in range(opt.niter):
         if opt.cond:
             #add condition to fake output
             zeros = torch.zeros(bs,opt.nc,64,64)
+            if opt.cuda:
+                zeros = zeros.cuda()
             zeros_with_target = torch.cat([zeros,one_hot_target_layers],1)
             #print (target9)
             zeros_with_target_var = Variable(zeros_with_target)
