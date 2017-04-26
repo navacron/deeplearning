@@ -19,6 +19,7 @@ parser.add_argument('--dataset', required=True, help='cifar10 | lsun | imagenet 
 parser.add_argument('--dataroot', required=True, help='path to dataset')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=2)
 parser.add_argument('--batchSize', type=int, default=64, help='input batch size')
+parser.add_argument('--num_classes', type=int, default=4, help="class to generate")
 parser.add_argument('--imageSize', type=int, default=64, help='the height / width of the input image to network')
 parser.add_argument('--nc', type=int, default=3, help='input depth')
 parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
@@ -102,7 +103,7 @@ nc = int(opt.nc)
 ncc = nc  
 nzc = nz
 
-num_classes = 4
+num_classes = opt.num_classes
 
 if opt.cond:
     ncc = nc + num_classes
@@ -260,9 +261,9 @@ def one_hot_image_exrta_layers(target):
     #print (target)
     #print (target_hot)
     repeat1 = target_hot.repeat(1,64)
-    repeat2 = repeat1.view(batch_size,64,4)
+    repeat2 = repeat1.view(batch_size,64,num_classes)
     repeat3 =repeat2.repeat(1,64,1)
-    repeat4 = repeat3.view(batch_size,64,64,4)
+    repeat4 = repeat3.view(batch_size,64,64,num_classes)
     repeat5 = repeat4.permute(0,3,2,1)
     return repeat5    
 
@@ -352,9 +353,10 @@ for epoch in range(opt.niter):
             fake2 = fake.data
             if opt.cond:
                 #print (fake)
-                fake2 = fake.data[:,0:3,:,:]
-                if opt.nc == 1:
-                    fake2 = fake2.unsqueeze(1)
+                fake2 = fake.data[:,0:opt.nc,:,:]
+                # if opt.nc == 1:
+                #     fake2 = fake2.unsqueeze(1)
+                #print (fake2)
                 #print (fake2)
             vutils.save_image(fake2,
                     '%s/fake_samples_epoch_%03d.png' % (opt.outf, epoch),

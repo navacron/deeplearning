@@ -9,8 +9,8 @@ from torch.autograd import Variable
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--netG', required=True, default='', help="path to netG (to continue training)")
-parser.add_argument('--num_class', type=int, default=3, help="class to generate")
-parser.add_argument('--total_class', type=int, default=4, help="class to generate")
+parser.add_argument('--the_class', type=int, default=3, help="class to generate")
+parser.add_argument('--num_classes', type=int, default=4, help="class to generate")
 parser.add_argument('--nc', type=int, default=3, help='input depth')
 parser.add_argument('--ngf', type=int, default=64)
 parser.add_argument('--ndf', type=int, default=64)
@@ -23,7 +23,7 @@ parser.add_argument('--ngpu', type=int, default=1, help='number of GPUs to use')
 
 opt = parser.parse_args()
 print(opt)
-num_classes = opt.total_class
+num_classes = opt.num_classes
 ngpu = int(opt.ngpu)
 
 ngf = int(opt.ngf)
@@ -87,7 +87,7 @@ def one_hot(target):
 fixed_noise = torch.FloatTensor(opt.batchSize, nz, 1, 1).normal_(0, 1)
 
 ones = torch.ones(opt.batchSize,1)
-fixed_class_vec = torch.mul(ones,opt.num_class)
+fixed_class_vec = torch.mul(ones,opt.the_class)
 class_onehot = one_hot(fixed_class_vec.long())
 class_onehot.unsqueeze_(2).unsqueeze_(3)
 fixed_noise = torch.cat([fixed_noise,class_onehot],1)
@@ -96,8 +96,8 @@ fixed_noise = Variable(fixed_noise)
 fake = netG(fixed_noise)
 fake2 = fake.data
 fake2 = fake.data[:,0:opt.nc,:,:]
-if opt.nc == 1:
-    fake2 = fake2.unsqueeze(1)
+# if opt.nc == 1:
+#     fake2 = fake2.unsqueeze(1)
 vutils.save_image(fake2,
-        '%s/final_samples_epoch_%03d.png' % (opt.outf, opt.num_class),
+        '%s/final_samples_epoch_%03d.png' % (opt.outf, opt.the_class),
         normalize=True)
